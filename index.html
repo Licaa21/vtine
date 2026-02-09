@@ -2,7 +2,7 @@
 <html lang="ro">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pentru tine ❤️</title>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -12,6 +12,7 @@
             margin: 0;
             padding: 0;
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -20,22 +21,28 @@
             background-color: #ffe6e6;
             font-family: 'Poppins', sans-serif;
             overflow: hidden;
+            position: relative;
         }
 
         .container {
             text-align: center;
             z-index: 10;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         h1 {
             font-family: 'Pacifico', cursive;
             color: #d63384;
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 20px;
+            line-height: 1.2;
         }
 
         .gif-container img {
-            width: 200px;
+            width: 80%;
+            max-width: 250px;
             border-radius: 15px;
             margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -43,79 +50,84 @@
 
         .buttons {
             display: flex;
-            gap: 20px;
+            gap: 15px;
             justify-content: center;
             align-items: center;
+            width: 100%;
+            height: 80px; 
             position: relative;
-            min-height: 100px; 
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 1.2rem;
+            padding: 12px 25px;
+            font-size: 1.1rem;
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: transform 0.2s ease, background-color 0.2s;
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
         }
 
         #yesBtn {
             background-color: #28a745;
             color: white;
             box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
-            z-index: 2;
-        }
-
-        #yesBtn:hover {
-            transform: scale(1.1);
-            background-color: #218838;
+            z-index: 100; 
         }
 
         #noBtn {
             background-color: #dc3545;
             color: white;
             box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-            position: relative;
-            z-index: 1;
-            transition: transform 0.2s ease, background-color 0.2s;
+            z-index: 99;
+            position: absolute; 
+            right: 20%; 
+        }
+        
+        #yesBtn {
+            position: relative; 
         }
 
         @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg) scale(var(--scale-factor)); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg) scale(var(--scale-factor)); }
-            20% { transform: translate(-3px, 0px) rotate(1deg) scale(var(--scale-factor)); }
-            30% { transform: translate(3px, 2px) rotate(0deg) scale(var(--scale-factor)); }
-            40% { transform: translate(1px, -1px) rotate(1deg) scale(var(--scale-factor)); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg) scale(var(--scale-factor)); }
-            60% { transform: translate(-3px, 1px) rotate(0deg) scale(var(--scale-factor)); }
-            70% { transform: translate(3px, 1px) rotate(-1deg) scale(var(--scale-factor)); }
-            80% { transform: translate(-1px, -1px) rotate(1deg) scale(var(--scale-factor)); }
-            90% { transform: translate(1px, 2px) rotate(0deg) scale(var(--scale-factor)); }
-            100% { transform: translate(1px, -2px) rotate(-1deg) scale(var(--scale-factor)); }
+            0% { transform: translate(1px, 1px) rotate(0deg) scale(var(--scale)); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg) scale(var(--scale)); }
+            20% { transform: translate(-3px, 0px) rotate(1deg) scale(var(--scale)); }
+            30% { transform: translate(3px, 2px) rotate(0deg) scale(var(--scale)); }
+            40% { transform: translate(1px, -1px) rotate(1deg) scale(var(--scale)); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg) scale(var(--scale)); }
+            60% { transform: translate(-3px, 1px) rotate(0deg) scale(var(--scale)); }
+            70% { transform: translate(3px, 1px) rotate(-1deg) scale(var(--scale)); }
+            80% { transform: translate(-1px, -1px) rotate(1deg) scale(var(--scale)); }
+            90% { transform: translate(1px, 2px) rotate(0deg) scale(var(--scale)); }
+            100% { transform: translate(1px, -2px) rotate(-1deg) scale(var(--scale)); }
         }
 
         .shake-animation {
-            animation: shake 0.5s;
+            animation: shake 0.4s;
+            background-color: #ff0000 !important;
         }
 
-        .pop-animation {
+        .pop {
             transform: scale(0) !important;
             opacity: 0;
-            transition: transform 0.2s, opacity 0.2s;
+            transition: all 0.3s ease;
         }
 
         #successMessage {
             display: none;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
         
         #successMessage p {
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: #d63384;
             font-weight: bold;
+            padding: 0 20px;
         }
     </style>
 </head>
@@ -130,7 +142,7 @@
         
         <div class="buttons">
             <button id="yesBtn" onclick="sheSaidYes()">YES ❤️</button>
-            <button id="noBtn">NO 😢</button>
+            <button id="noBtn" style="--scale: 1">NO 😢</button>
         </div>
     </div>
 
@@ -145,55 +157,80 @@
     <script>
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
-        let hoverCount = 0;
+        
+        let runCount = 0;
+        const maxRuns = 5; 
         let clickCount = 0;
         let currentScale = 1;
-        const maxHovers = 6; 
 
-        noBtn.addEventListener('mouseover', function() {
-            if (hoverCount < maxHovers) {
-                moveButton();
-                hoverCount++;
-            } else {
-                noBtn.style.position = 'static'; 
-                noBtn.innerText = "NO? 🤨"; 
+        // Resetam pozitia initiala ca sa fie langa YES
+        noBtn.style.position = 'relative';
+        noBtn.style.right = 'auto';
+
+        function moveButton(e) {
+            if (runCount >= maxRuns) {
+                return; 
             }
-        });
+            
+            if(e) e.preventDefault(); 
 
-        noBtn.addEventListener('click', function() {
-            if (hoverCount < maxHovers) {
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+            
+            const maxX = window.innerWidth - btnWidth - 20; 
+            const maxY = window.innerHeight - btnHeight - 20;
+            
+            const randomX = Math.max(10, Math.random() * maxX);
+            const randomY = Math.max(10, Math.random() * maxY);
+
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+            
+            runCount++;
+        }
+
+        function popButton() {
+            if (runCount < maxRuns) {
+                moveButton();
                 return;
             }
 
             clickCount++;
-            currentScale += 0.3; 
-            noBtn.style.setProperty('--scale-factor', currentScale);
+            currentScale += 0.2;
+            noBtn.style.setProperty('--scale', currentScale);
+            noBtn.style.transform = `scale(${currentScale})`;
             
             noBtn.classList.remove('shake-animation');
             void noBtn.offsetWidth; 
             noBtn.classList.add('shake-animation');
 
-            noBtn.style.transform = `scale(${currentScale})`;
-
-            if (clickCount >= 5) {
-                noBtn.classList.add('pop-animation');
+            if (clickCount >= 4) {
+                noBtn.classList.add('pop');
                 setTimeout(() => {
                     noBtn.style.display = 'none';
-                }, 200);
+                    yesBtn.style.transform = 'scale(1.5)';
+                }, 300);
+            }
+        }
+
+        // PC Events
+        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('click', popButton);
+
+        // Mobile Events
+        noBtn.addEventListener('touchstart', function(e) {
+            if (runCount < maxRuns) {
+                moveButton(e);
+            }
+        }, {passive: false});
+
+        noBtn.addEventListener('touchend', function(e) {
+            if (runCount >= maxRuns) {
+                e.preventDefault(); 
+                popButton();
             }
         });
-
-        function moveButton() {
-            const containerWidth = window.innerWidth;
-            const containerHeight = window.innerHeight;
-            
-            const randomX = Math.random() * (containerWidth - 150); 
-            const randomY = Math.random() * (containerHeight - 100);
-
-            noBtn.style.position = 'absolute';
-            noBtn.style.left = randomX + 'px';
-            noBtn.style.top = randomY + 'px';
-        }
 
         function sheSaidYes() {
             document.getElementById('questionScreen').style.display = 'none';
