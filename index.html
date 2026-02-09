@@ -8,44 +8,48 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        body {
+        /* Blocheaza orice scroll si zoom din CSS */
+        html, body {
             margin: 0;
             padding: 0;
-            height: 100vh;
-            width: 100vw;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Fara scrollbars */
+            position: fixed; /* Fixeaza pagina */
+            touch-action: none; /* Fara gesturi de zoom */
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            background-color: #ffe6e6;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .container {
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
-            background-color: #ffe6e6;
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .container {
-            text-align: center;
-            z-index: 10;
+            height: 100%; /* Ocupa tot ecranul */
             width: 100%;
-            padding: 20px;
+            z-index: 10;
             box-sizing: border-box;
+            padding: 20px;
         }
 
         h1 {
             font-family: 'Pacifico', cursive;
             color: #d63384;
-            font-size: 2.5rem;
-            margin-bottom: 20px;
+            font-size: 2.2rem; /* Putin mai mic sa incapa bine pe mobil */
+            margin: 20px 0;
+            text-align: center;
             line-height: 1.2;
+            pointer-events: none; /* Sa nu poata selecta textul */
         }
 
         .gif-container img {
-            width: 80%;
             max-width: 250px;
+            width: 70vw; /* Responsive */
             border-radius: 15px;
-            margin-bottom: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            pointer-events: none;
         }
 
         .buttons {
@@ -54,8 +58,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            height: 80px; 
-            position: relative;
+            min-height: 60px;
         }
 
         button {
@@ -64,31 +67,26 @@
             border: none;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s ease, background-color 0.2s;
+            transition: transform 0.2s ease;
             font-family: 'Poppins', sans-serif;
             font-weight: 600;
             -webkit-tap-highlight-color: transparent;
             user-select: none;
+            position: relative;
         }
 
         #yesBtn {
             background-color: #28a745;
             color: white;
             box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3);
-            z-index: 100; 
+            z-index: 100;
         }
 
         #noBtn {
             background-color: #dc3545;
             color: white;
             box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-            z-index: 99;
-            position: absolute; 
-            right: 20%; 
-        }
-        
-        #yesBtn {
-            position: relative; 
+            z-index: 101; 
         }
 
         @keyframes shake {
@@ -118,16 +116,17 @@
 
         #successMessage {
             display: none;
+            height: 100%;
             flex-direction: column;
+            justify-content: center;
             align-items: center;
-            width: 100%;
+            text-align: center;
         }
         
         #successMessage p {
             font-size: 1.3rem;
             color: #d63384;
             font-weight: bold;
-            padding: 0 20px;
         }
     </style>
 </head>
@@ -135,7 +134,7 @@
 
     <div class="container" id="questionScreen">
         <div class="gif-container">
-            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGIwZGE1N2Y4MDI5MjM5MzQ5N2Y4MDI5MjM5MzQ5N2Y4MDI5MjM5MyZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/3o7TKoWXm3okO1kgHC/giphy.gif" alt="Cute bear">
+            <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGIwZGE1N2Y4MDI5MjM5MzQ5N2Y4MDI5MjM5MyZlcD12MV9pbnRlcm5hbF9naWZzX2dpZklkJmN0PWc/3o7TKoWXm3okO1kgHC/giphy.gif" alt="Cute bear">
         </div>
         
         <h1>Do you want to be my Valentine?</h1>
@@ -155,79 +154,100 @@
     </div>
 
     <script>
+        // Blocheaza zoom pe IOS (safari)
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         
+        // Configurare
         let runCount = 0;
-        const maxRuns = 5; 
+        const maxRuns = 5; // De cate ori fuge
+        const popClicks = 4; // De cate ori trebuie sa apese in faza 2
+        
         let clickCount = 0;
         let currentScale = 1;
 
-        // Resetam pozitia initiala ca sa fie langa YES
-        noBtn.style.position = 'relative';
-        noBtn.style.right = 'auto';
+        // Dimensiuni de siguranta (padding de margine)
+        const safeMargin = 20;
 
         function moveButton(e) {
-            if (runCount >= maxRuns) {
-                return; 
-            }
-            
-            if(e) e.preventDefault(); 
+            if (runCount >= maxRuns) return;
+            if(e) e.preventDefault();
 
+            // Calculam dimensiunile exacte ale ferestrei DISPONIBILE
+            const windowWidth = window.innerWidth;
+            const windowHeight = window.innerHeight;
+            
+            // Dimensiunile butonului
             const btnWidth = noBtn.offsetWidth;
             const btnHeight = noBtn.offsetHeight;
-            
-            const maxX = window.innerWidth - btnWidth - 20; 
-            const maxY = window.innerHeight - btnHeight - 20;
-            
-            const randomX = Math.max(10, Math.random() * maxX);
-            const randomY = Math.max(10, Math.random() * maxY);
 
-            noBtn.style.position = 'absolute';
+            // Calculam pozitia maxima (width ecran - width buton - margine)
+            const maxX = windowWidth - btnWidth - safeMargin;
+            const maxY = windowHeight - btnHeight - safeMargin;
+
+            // Generam coordonate random in acest spatiu sigur
+            // Math.max(safeMargin, ...) asigura ca nu iese nici in stanga/sus
+            const randomX = Math.max(safeMargin, Math.random() * maxX);
+            const randomY = Math.max(safeMargin, Math.random() * maxY);
+
+            // Aplicam pozitia fixa pe ecran
+            noBtn.style.position = 'fixed'; 
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
             
             runCount++;
         }
 
-        function popButton() {
+        function popButton(e) {
+            // Daca inca e in faza de "fugit", il mutam
             if (runCount < maxRuns) {
-                moveButton();
+                moveButton(e);
                 return;
             }
 
+            // Faza de "Umflare"
             clickCount++;
             currentScale += 0.2;
             noBtn.style.setProperty('--scale', currentScale);
             noBtn.style.transform = `scale(${currentScale})`;
             
+            // Resetam animatia de shake ca sa mearga de fiecare data
             noBtn.classList.remove('shake-animation');
-            void noBtn.offsetWidth; 
+            void noBtn.offsetWidth; // Trigger reflow
             noBtn.classList.add('shake-animation');
 
-            if (clickCount >= 4) {
+            // POC!
+            if (clickCount >= popClicks) {
                 noBtn.classList.add('pop');
                 setTimeout(() => {
                     noBtn.style.display = 'none';
-                    yesBtn.style.transform = 'scale(1.5)';
+                    // Facem butonul de YES mai vizibil
+                    yesBtn.style.transform = 'scale(1.3)';
+                    yesBtn.style.zIndex = 200;
                 }, 300);
             }
         }
 
-        // PC Events
+        // Evenimente pentru PC
         noBtn.addEventListener('mouseover', moveButton);
         noBtn.addEventListener('click', popButton);
 
-        // Mobile Events
+        // Evenimente Speciale Mobile (Touch)
         noBtn.addEventListener('touchstart', function(e) {
+            // Pe touch, vrem sa fuga imediat ce pune degetul, daca e in faza 1
             if (runCount < maxRuns) {
                 moveButton(e);
             }
         }, {passive: false});
 
         noBtn.addEventListener('touchend', function(e) {
+            // Daca a terminat de fugit si apasa pe el
             if (runCount >= maxRuns) {
-                e.preventDefault(); 
+                e.preventDefault();
                 popButton();
             }
         });
@@ -242,14 +262,9 @@
             var duration = 3 * 1000;
             var animationEnd = Date.now() + duration;
             var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
             var interval = setInterval(function() {
                 var timeLeft = animationEnd - Date.now();
-
-                if (timeLeft <= 0) {
-                    return clearInterval(interval);
-                }
-
+                if (timeLeft <= 0) return clearInterval(interval);
                 var particleCount = 50 * (timeLeft / duration);
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
                 confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
