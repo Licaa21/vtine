@@ -8,15 +8,14 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* Blocheaza orice scroll si zoom din CSS */
         html, body {
             margin: 0;
             padding: 0;
             height: 100%;
             width: 100%;
-            overflow: hidden; /* Fara scrollbars */
-            position: fixed; /* Fixeaza pagina */
-            touch-action: none; /* Fara gesturi de zoom */
+            overflow: hidden;
+            position: fixed;
+            touch-action: none;
             background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
             background-color: #ffe6e6;
             font-family: 'Poppins', sans-serif;
@@ -27,7 +26,7 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100%; /* Ocupa tot ecranul */
+            height: 100%;
             width: 100%;
             z-index: 10;
             box-sizing: border-box;
@@ -37,16 +36,16 @@
         h1 {
             font-family: 'Pacifico', cursive;
             color: #d63384;
-            font-size: 2.2rem; /* Putin mai mic sa incapa bine pe mobil */
+            font-size: 2.2rem;
             margin: 20px 0;
             text-align: center;
             line-height: 1.2;
-            pointer-events: none; /* Sa nu poata selecta textul */
+            pointer-events: none;
         }
 
         .gif-container img {
             max-width: 250px;
-            width: 70vw; /* Responsive */
+            width: 70vw;
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             pointer-events: none;
@@ -57,8 +56,9 @@
             gap: 15px;
             justify-content: center;
             align-items: center;
-            width: 100%;
+            width: auto; 
             min-height: 60px;
+            position: relative; 
         }
 
         button {
@@ -88,6 +88,40 @@
             box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
             z-index: 101; 
         }
+
+        /* Stiluri noi pentru sageti */
+        .arrow-indicator {
+            position: absolute;
+            font-size: 3rem;
+            color: #28a745;
+            opacity: 0; /* Ascunse initial */
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            z-index: 90;
+            font-weight: bold;
+        }
+        .arrow-left { left: -50px; animation: pointRight 0.8s infinite alternate ease-in-out; }
+        .arrow-right { right: -50px; animation: pointLeft 0.8s infinite alternate ease-in-out; }
+        
+        .show-arrows { opacity: 1 !important; }
+
+        @keyframes pointRight { from { transform: translateX(0); } to { transform: translateX(10px); } }
+        @keyframes pointLeft { from { transform: translateX(0); } to { transform: translateX(-10px); } }
+
+        /* Stiluri pentru Like-uri zburatoare */
+        .floating-like {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 150;
+            animation: floatUp 2s ease-out forwards;
+        }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(0) scale(0.5); }
+            10% { opacity: 1; }
+            100% { opacity: 0; transform: translateY(-150px) scale(1.5) rotate(var(--rotation)); }
+        }
+
 
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg) scale(var(--scale)); }
@@ -127,6 +161,7 @@
             font-size: 1.3rem;
             color: #d63384;
             font-weight: bold;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -140,8 +175,10 @@
         <h1>Do you want to be my Valentine?</h1>
         
         <div class="buttons">
+            <div class="arrow-indicator arrow-left">→</div>
             <button id="yesBtn" onclick="sheSaidYes()">YES ❤️</button>
             <button id="noBtn" style="--scale: 1">NO 😢</button>
+            <div class="arrow-indicator arrow-right">←</div>
         </div>
     </div>
 
@@ -149,12 +186,11 @@
         <div class="gif-container">
             <img src="gif.gif" alt="Happy Cat">
         </div>
-        <h1>Super! O sa te las sa ghicesti unde mergem ! ❤️</h1>
-        <p>Numele restaurantului incepe cu prima litera de la ultimul cuvant din propozitia asta,Te iubesc!</p>
+        <h1>YEEES! Știam eu! ❤️</h1>
+        <p>Diseară la 20:00! Te iubesc!</p>
     </div>
 
     <script>
-        // Blocheaza zoom pe IOS (safari)
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
         });
@@ -162,39 +198,27 @@
         const noBtn = document.getElementById('noBtn');
         const yesBtn = document.getElementById('yesBtn');
         
-        // Configurare
         let runCount = 0;
-        const maxRuns = 6; // De cate ori fuge
-        const popClicks = 4; // De cate ori trebuie sa apese in faza 2
+        const maxRuns = 5; 
+        const popClicks = 4; 
         
         let clickCount = 0;
         let currentScale = 1;
-
-        // Dimensiuni de siguranta (padding de margine)
         const safeMargin = 20;
 
         function moveButton(e) {
             if (runCount >= maxRuns) return;
             if(e) e.preventDefault();
 
-            // Calculam dimensiunile exacte ale ferestrei DISPONIBILE
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
-            
-            // Dimensiunile butonului
             const btnWidth = noBtn.offsetWidth;
             const btnHeight = noBtn.offsetHeight;
-
-            // Calculam pozitia maxima (width ecran - width buton - margine)
             const maxX = windowWidth - btnWidth - safeMargin;
             const maxY = windowHeight - btnHeight - safeMargin;
-
-            // Generam coordonate random in acest spatiu sigur
-            // Math.max(safeMargin, ...) asigura ca nu iese nici in stanga/sus
             const randomX = Math.max(safeMargin, Math.random() * maxX);
             const randomY = Math.max(safeMargin, Math.random() * maxY);
 
-            // Aplicam pozitia fixa pe ecran
             noBtn.style.position = 'fixed'; 
             noBtn.style.left = randomX + 'px';
             noBtn.style.top = randomY + 'px';
@@ -203,49 +227,90 @@
         }
 
         function popButton(e) {
-            // Daca inca e in faza de "fugit", il mutam
             if (runCount < maxRuns) {
                 moveButton(e);
                 return;
             }
 
-            // Faza de "Umflare"
             clickCount++;
             currentScale += 0.2;
             noBtn.style.setProperty('--scale', currentScale);
             noBtn.style.transform = `scale(${currentScale})`;
             
-            // Resetam animatia de shake ca sa mearga de fiecare data
             noBtn.classList.remove('shake-animation');
-            void noBtn.offsetWidth; // Trigger reflow
+            void noBtn.offsetWidth; 
             noBtn.classList.add('shake-animation');
 
-            // POC!
+            // MOMENTUL CAND SE SPARGE BUTONUL NU
             if (clickCount >= popClicks) {
                 noBtn.classList.add('pop');
                 setTimeout(() => {
                     noBtn.style.display = 'none';
-                    // Facem butonul de YES mai vizibil
                     yesBtn.style.transform = 'scale(1.3)';
                     yesBtn.style.zIndex = 200;
+                    
+                    // Declansam noile animatii
+                    triggerFinalIndicators();
                 }, 300);
             }
         }
 
-        // Evenimente pentru PC
+        // Functia noua care porneste sagetile si like-urile
+        function triggerFinalIndicators() {
+            // Aratam sagetile
+            document.querySelector('.arrow-left').classList.add('show-arrows');
+            document.querySelector('.arrow-right').classList.add('show-arrows');
+
+            // Pornim ploaia de like-uri in jurul butonului YES
+            const yesRect = yesBtn.getBoundingClientRect();
+            const centerX = yesRect.left + yesRect.width / 2;
+            const centerY = yesRect.top + yesRect.height / 2;
+
+            let likeCount = 0;
+            const maxLikes = 20; // Cate like-uri sa apara
+            const likeInterval = setInterval(() => {
+                if (likeCount >= maxLikes) {
+                    clearInterval(likeInterval);
+                    return;
+                }
+                spawnLikeEmoji(centerX, centerY);
+                likeCount++;
+            }, 200); // Un like nou la fiecare 200ms
+        }
+
+        function spawnLikeEmoji(x, y) {
+            const emoji = document.createElement('div');
+            emoji.innerHTML = '👍';
+            emoji.classList.add('floating-like');
+            
+            // Pozitie random in jurul centrului
+            const offsetX = (Math.random() - 0.5) * 120;
+            const offsetY = (Math.random() - 0.5) * 80;
+            const rotation = (Math.random() - 0.5) * 60; // Rotatie random
+
+            emoji.style.left = (x + offsetX) + 'px';
+            emoji.style.top = (y + offsetY) + 'px';
+            emoji.style.setProperty('--rotation', rotation + 'deg');
+            emoji.style.fontSize = (1.5 + Math.random()) + 'rem';
+
+            document.body.appendChild(emoji);
+
+            // Stergem elementul dupa ce se termina animatia ca sa nu incarcam memoria
+            setTimeout(() => {
+                emoji.remove();
+            }, 2000);
+        }
+
         noBtn.addEventListener('mouseover', moveButton);
         noBtn.addEventListener('click', popButton);
 
-        // Evenimente Speciale Mobile (Touch)
         noBtn.addEventListener('touchstart', function(e) {
-            // Pe touch, vrem sa fuga imediat ce pune degetul, daca e in faza 1
             if (runCount < maxRuns) {
                 moveButton(e);
             }
         }, {passive: false});
 
         noBtn.addEventListener('touchend', function(e) {
-            // Daca a terminat de fugit si apasa pe el
             if (runCount >= maxRuns) {
                 e.preventDefault();
                 popButton();
@@ -277,5 +342,3 @@
     </script>
 </body>
 </html>
-
-
